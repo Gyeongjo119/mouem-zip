@@ -1,8 +1,8 @@
 <template>
   <div class="custom-card" role="button" @click="$emit('open', term)">
     <h5 class="term-title">{{ term.title }}</h5>
-    <span class="term-badge">{{ term.category }}</span>
-    <p class="term-summary">{{ term.summary }}</p>
+    <span class="term-badge" :style="{ backgroundColor: term.color }">{{ term.category }}</span>
+    <p class="term-definition">{{ term.definition }}</p>
   </div>
 </template>
 
@@ -28,9 +28,9 @@ export default {
   display: flex;
   flex-direction: column;
   align-items: center;        /* 가로 방향 중앙 */
-  justify-content: center;    /* 세로 방향 중앙 */
+  justify-content: flex-start;    /* 세로 방향 중앙 */
   text-align: center;         /* 텍스트 정렬도 중앙 */
-  height: 180px;              /* 카드 높이를 채우도록 */
+  height: 190px;
 
 }
 .custom-card:hover {
@@ -39,7 +39,7 @@ export default {
 
 .term-title {
   font-weight: 700;
-  margin-bottom: 8px;
+  margin-bottom: 12px;
   font-size: 1.1rem;
 }
 
@@ -50,6 +50,17 @@ export default {
   padding: 4px 10px;
   border-radius: 12px;
   margin-bottom: 12px;
+}
+
+.term-definition {
+  font-size: 0.95rem;
+  color: #333;
+  margin: 5px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;   /* 최대 3줄만 보이게 */
+  -webkit-box-orient: vertical;
 }
 
 .term-summary {

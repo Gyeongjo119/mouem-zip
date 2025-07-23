@@ -16,10 +16,10 @@
         <div class="modal-body pt-0">
           <div class="text-center">
             <h5 class="modal-title mb-2">{{ term.title }}</h5>
-            <span class="badge custom-badge mb-4">{{ term.category }}</span>
+            <span class="badge custom-badge mb-4 " :style="{ backgroundColor: term.color }">{{ term.category }}</span>
           </div>
 
-          <!-- ✅ 콘텐츠 영역 (좌측 정렬) -->
+          <!-- 콘텐츠 영역 (좌측 정렬) -->
           <div class="content-area mx-auto">
             <!-- 정의 -->
             <div class="content-row">
@@ -69,6 +69,10 @@ export default {
   min-height: 400px;
 }
 
+.modal-title{
+  font-weight: 700;
+}
+
 /* 상단 배지 */
 .custom-badge {
   background-color: rgba(183, 255, 172, 0.45);
@@ -111,5 +115,13 @@ export default {
   flex: 1;
   word-break: break-word;
   white-space: pre-line;
+}
+
+.custom-badge {
+
+  border-radius: 12px;
+  font-size: 0.85rem;
+  font-weight: 400;
+  color: #000;
 }
 </style>

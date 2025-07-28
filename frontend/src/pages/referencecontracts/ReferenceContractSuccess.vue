@@ -165,12 +165,6 @@ h1 {
   vertical-align: top;
 }
 
-.line {
-  border: none;
-  border-top: 2px solid #000;
-  margin: 16px 0;
-}
-
 .divider {
   border: none;
   border-top: 1px solid #ccc;
@@ -193,11 +187,6 @@ h1 {
   color: #333;
   line-height: 1.6;
   margin-bottom: 10px;
-}
-
-.special-section strong {
-  font-weight: 600;
-  color: #111827;
 }
 
 .special-section .custom {

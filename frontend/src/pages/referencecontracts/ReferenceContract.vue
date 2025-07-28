@@ -1,10 +1,10 @@
 <script setup>
-import { ref } from 'vue';
+import { ref, onMounted, watch } from 'vue';
 import { useRouter } from 'vue-router';
 
 const router = useRouter();
 
-// 반응형 필드들
+// 입력값 상태 정의
 const lessor = ref('');
 const lessee = ref('');
 const address = ref('');
@@ -15,17 +15,10 @@ const structure = ref('');
 const maintenanceFee = ref('');
 const startDate = ref('');
 const endDate = ref('');
-
-// 특약사항 배열
 const special = ref(['']);
 
-// 특약사항 추가 버튼
-const addSpecialTerm = () => {
-  special.value.push('');
-};
-
-// 작성 완료 시 sessionStorage 저장
-const onSubmit = () => {
+// 입력 상태를 저장하는 함수
+function saveContractToSession() {
   const contractData = {
     lessor: lessor.value,
     lessee: lessee.value,
@@ -37,10 +30,110 @@ const onSubmit = () => {
     maintenanceFee: maintenanceFee.value,
     startDate: startDate.value,
     endDate: endDate.value,
-    special: special.value.filter((s) => s.trim() !== ''),
+    special: special.value,
   };
-
   sessionStorage.setItem('contractData', JSON.stringify(contractData));
+}
+
+onMounted(() => {
+  const saved = sessionStorage.getItem('contractData');
+  if (saved) {
+    const data = JSON.parse(saved);
+    lessor.value = data.lessor || '';
+    lessee.value = data.lessee || '';
+    address.value = data.address || '';
+    contractAmount.value = data.contractAmount || '';
+    deposit.value = data.deposit || '';
+    rent.value = data.rent || '';
+    structure.value = data.structure || '';
+    maintenanceFee.value = data.maintenanceFee || '';
+    startDate.value = data.startDate || '';
+    endDate.value = data.endDate || '';
+    special.value =
+      Array.isArray(data.special) && data.special.length > 0
+        ? data.special
+        : [''];
+  } else {
+    // ⭐ 새로 작성하는 경우 기본값 세팅
+    lessor.value = '';
+    lessee.value = '';
+    address.value = '';
+    contractAmount.value = '';
+    deposit.value = '';
+    rent.value = '';
+    structure.value = '';
+    maintenanceFee.value = '';
+    startDate.value = '';
+    endDate.value = '';
+    special.value = [''];
+  }
+
+  // 특약 예시에서 넘어온 값 처리
+  const selected = JSON.parse(
+    sessionStorage.getItem('selectedClauses') || '[]'
+  );
+  const newClauses = selected.map((clause) => clause.text).filter(Boolean);
+  newClauses.forEach((clause) => {
+    if (!special.value.includes(clause)) {
+      special.value.unshift(clause);
+    }
+  });
+
+  // 예시 항목은 초기화 안함 (다시 보기 위해 유지)
+  sessionStorage.setItem('selectedClauses', JSON.stringify(selected));
+});
+
+// 폼 내용 변경 시 자동 저장
+watch(
+  [
+    lessor,
+    lessee,
+    address,
+    contractAmount,
+    deposit,
+    rent,
+    structure,
+    maintenanceFee,
+    startDate,
+    endDate,
+    special,
+  ],
+  saveContractToSession,
+  { deep: true }
+);
+
+const addSpecialTerm = () => {
+  special.value.push('');
+};
+
+const removeSpecialTerm = (index) => {
+  if (special.value.length > 1) {
+    special.value.splice(index, 1);
+  } else {
+    special.value = ['']; // 마지막 하나는 비우기만
+  }
+};
+
+const onSubmit = () => {
+  const requiredFields = [
+    lessor.value,
+    lessee.value,
+    address.value,
+    contractAmount.value,
+    deposit.value,
+    rent.value,
+    structure.value,
+    maintenanceFee.value,
+    startDate.value,
+    endDate.value,
+  ];
+
+  if (requiredFields.some((field) => !field || field.trim() === '')) {
+    alert('모든 필수 항목을 입력해주세요.');
+    return;
+  }
+
+  saveContractToSession(); // 최종 저장
   router.push({ name: 'ReferenceContractSuccess' });
 };
 </script>
@@ -49,7 +142,6 @@ const onSubmit = () => {
   <div class="wrapper">
     <div class="contract-box">
       <h1 class="title">계약서 작성을 위해 필요한 정보를 입력해주세요.</h1>
-
       <form class="form-grid" @submit.prevent="onSubmit">
         <div class="form-row">
           <label>임대인(집주인)</label>
@@ -67,7 +159,6 @@ const onSubmit = () => {
             placeholder="도로명 주소를 입력해주세요"
           />
         </div>
-
         <div class="form-row">
           <label>토지 지목</label>
           <input type="text" placeholder="대" />
@@ -76,7 +167,6 @@ const onSubmit = () => {
           <label>토지 면적</label>
           <input type="text" placeholder="m²" />
         </div>
-
         <div class="form-row">
           <label>건물 구조·용도</label>
           <input v-model="structure" type="text" placeholder="다세대 주택" />
@@ -85,7 +175,6 @@ const onSubmit = () => {
           <label>건물 면적</label>
           <input type="text" placeholder="m²" />
         </div>
-
         <div class="form-row">
           <label>임차할 부분</label>
           <input type="text" placeholder="동·호수" />
@@ -94,7 +183,6 @@ const onSubmit = () => {
           <label>임차할 면적</label>
           <input type="text" placeholder="m²" />
         </div>
-
         <div class="form-row">
           <label>보증금</label>
           <input v-model="deposit" type="text" placeholder="원" />
@@ -103,7 +191,6 @@ const onSubmit = () => {
           <label>계약금</label>
           <input v-model="contractAmount" type="text" placeholder="원" />
         </div>
-
         <div class="form-row">
           <label>잔금</label>
           <input v-model="rent" type="text" placeholder="원" />
@@ -112,7 +199,6 @@ const onSubmit = () => {
           <label>관리비</label>
           <input v-model="maintenanceFee" type="text" placeholder="원" />
         </div>
-
         <div class="form-row full date-range">
           <label>임대차 기간</label>
           <div class="date-inputs">
@@ -122,34 +208,50 @@ const onSubmit = () => {
             <span>까지</span>
           </div>
         </div>
-
-        <!-- 특약사항 영역 -->
         <div class="form-row full special-terms">
           <label>특약 사항</label>
-          <div
-            class="special-input"
-            v-for="(term, index) in special"
-            :key="index"
-          >
-            <input
-              v-model="special[index]"
-              type="text"
-              placeholder="특약 사항"
-            />
-            <button type="button" class="btn-small" @click="addSpecialTerm">
-              ＋
-            </button>
+          <div class="special-input-wrapper">
+            <div class="special-list">
+              <div
+                class="special-input"
+                v-for="(term, index) in special"
+                :key="index"
+              >
+                <textarea
+                  v-model="special[index]"
+                  placeholder="특약 사항을 입력하세요"
+                  rows="3"
+                ></textarea>
+                <div class="btn-group">
+                  <button
+                    v-if="index === special.length - 1"
+                    type="button"
+                    class="btn-small add"
+                    @click="addSpecialTerm"
+                  >
+                    ➕
+                  </button>
+                  <button
+                    type="button"
+                    class="btn-small remove"
+                    @click="removeSpecialTerm(index)"
+                  >
+                    ➖
+                  </button>
+                </div>
+              </div>
+            </div>
+            <div class="side-controls">
+              <button
+                type="button"
+                class="btn-template"
+                @click="router.push({ name: 'SpecialContractsRecommendation' })"
+              >
+                특약 예시에서 선택하기
+              </button>
+              <p class="tip">특약사항을 추가해드릴게요.</p>
+            </div>
           </div>
-
-          <button
-            type="button"
-            class="btn-template"
-            @click="router.push({ name: 'SpecialContractsRecommendation' })"
-          >
-            특약 예시에서 선택하기
-          </button>
-
-          <p class="tip">특약사항을 추가해드릴게요.</p>
         </div>
 
         <div class="button-group full">
@@ -160,7 +262,6 @@ const onSubmit = () => {
           >
             뒤로 가기
           </button>
-
           <button type="submit" class="btn-submit">작성 완료</button>
         </div>
       </form>
@@ -184,7 +285,7 @@ const onSubmit = () => {
   max-width: 920px;
 }
 .title {
-  font-size: 20px;
+  font-size: 26px;
   font-weight: bold;
   margin-bottom: 32px;
 }
@@ -226,11 +327,38 @@ input[type='date'] {
 .date-range label {
   width: 160px;
 }
-.special-terms .special-input {
+
+/* 🔧 특약 영역 */
+.special-terms .special-input-wrapper {
+  display: flex;
+  gap: 16px;
+  flex-grow: 1;
+  align-items: flex-start;
+}
+.special-list {
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.special-input {
   display: flex;
   align-items: center;
   gap: 8px;
-  margin-bottom: 10px;
+}
+.special-input textarea {
+  width: 100%;
+  flex-grow: 1;
+  padding: 10px;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  font-size: 14px;
+  resize: vertical;
+}
+.btn-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
 }
 .btn-small {
   padding: 6px 12px;
@@ -238,6 +366,20 @@ input[type='date'] {
   border: none;
   background-color: #ddd;
   cursor: pointer;
+  white-space: nowrap;
+}
+.btn-small.add {
+  background-color: skyblue;
+}
+.btn-small.remove {
+  background-color: palevioletred;
+}
+.side-controls {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+  padding-top: 6px;
 }
 .btn-template {
   background-color: #eef5ff;
@@ -251,7 +393,7 @@ input[type='date'] {
 .tip {
   font-size: 13px;
   color: #888;
-  margin-top: 6px;
+  margin: 0;
 }
 .button-group {
   display: flex;
